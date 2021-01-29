@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="./css/bootstrap-responsive.css" type="text/css" />
+		<link rel="stylesheet" href="./css/bootstrap.css" type="text/css" />
+		<link rel="stylesheet" href="./css/layer.css" type="text/css" />
+		<script src="./js/jquery-3.5.1.min.js"></script>
+		<script src="./js/layer.js"></script>
+		<script src="./js/bootstrap.js"></script>
+	</head>
+	<script type="text/javascript">
+		$("#data-process").hide();
+		var process_index = 10;
+		var intervalP ;
+		$(function(){
+			$.post("getmicroservicecode",{},function(data){
+				if(data.code =="00-0000"){
+					$("#data-code").html("");
+					for(var i=0;i<data.data.length;i++ ){
+						$("#data-code").append("<option value='"+data.data[i].microserviceCode+"'>"+data.data[i].microserviceCode+"</span><br/>")
+					}
+				}
+			},"json");
+			$.post("getenv",{},function(data){
+				if(data.code =="00-0000"){
+					$("#data-env").html("");
+					for(var i=0;i<data.data.length;i++ ){
+						$("#data-env").append("<option value='"+data.data[i].env+"'>"+data.data[i].env+"</span><br/>")
+					}
+				}
+			},"json");
+			
+		});
+		function searchData(){
+			layer.msg('开发中');
+			return;
+			$("#data-process").show();
+			$("#data-main").html("");
+			getData();
+			intervalP = setInterval(processData,1000);
+		}
+		function getData(){
+			var selectCode = $("#data-code option:selected").val();
+			var selectEnv = $("#data-env option:selected").val();
+			var date = $("#date").val();
+			var beginTime = $("#beginTime").val();
+			var endTime = $("#endTime").val();
+			var isTail = $("#tail:checked").val();
+			if(isTail != "1"){
+				isTail=0;
+			}
+			$.ajax({async:false});
+			$.post("getdata",{"env":selectEnv,"microserviceCode":selectCode,"date":date,"beginTime":beginTime,"endTime":endTime,"isTail":isTail},function(data){
+				if(data.code =="00-0000"){
+					
+					for(var i=0;i<data.data.length;i++ ){
+						$("#data-main").append("<span>"+data.data[i]+"</span><br/>")
+					}
+					var h = $(document).height()-$(window).height();
+		            $(document).scrollTop(h); 
+				}
+			},"json");
+		}
+		
+		function processData(){
+			process_index = process_index+10;
+			$("#data-process-loading").css("width",process_index+"%");
+			if(process_index==100){
+				clearInterval(intervalP);
+				$("#data-process").hide();
+				$("#data-process-loading").css("width","0%");
+			}
+		}
+		
+		// socket
+		var socket;
+		function openSocket() {
+			var isTail = $("#tail:checked").val();
+			if(isTail != "1"){
+				isTail=0;
+			}
+			if(isTail ==0) {
+				if(typeof(socket) == "undefined") {
+					return;
+				}else {
+					socket.close();
+				}
+				return;
+			}
+			$("#data-main").html("");
+			if(typeof(WebSocket) == "undefined") {
+				console.log("您的浏览器不支持WebSocket");
+			}else{
+				console.log("您的浏览器支持WebSocket");
+			   // var socketUrl="ws://192.168.56.1:9000/direct-rent-service/ws";
+				var socketUrl="ws://"+window.location.host.split(":")[0]+":12021/ws";
+				if(socket!=null){
+					socket.close();
+					socket=null;
+				}
+				socket = new WebSocket(socketUrl);
+				//打开事件
+				socket.onopen = function() {
+					console.log("websocket已打开");
+					var selectCode = $("#data-code option:selected").val();
+					var selectEnv = $("#data-env option:selected").val();
+					var date = $("#date").val();
+					var msg = '{"env":"'+selectEnv+'","code":"'+selectCode+'","date":"'+date+'"}';
+					socket.send(msg);
+				};
+				//获得消息事件
+				socket.onmessage = function(msg) {
+					var serverMsg = "收到服务端信息：" + msg.data;
+					//发现消息进入    开始处理前端触发逻辑
+					$("#data-main").append("<span>"+msg.data+"</span><br/>")
+					var h = $(document).height()-$(window).height();
+		            $(document).scrollTop(h); 
+				};
+				//关闭事件
+				socket.onclose = function() {
+					console.log("websocket已关闭");
+				};
+				//发生了错误事件
+				socket.onerror = function() {
+					console.log("websocket发生了错误");
+				}
+			}
+		}
+	</script>
+	<body>
+		<div id="data-search" style="padding: 5px;margin: 5px;">
+			<select id="data-env" class="select-medium search-query" style="width: 60px;margin-top: 11px;"></select>
+			<select id="data-code" class="select-medium search-query" style="width: 220px;margin-top: 11px;"></select>
+			<input id="date" type="text" class="input-medium search-query" placeholder="日期 格式yyyy-mm-dd">
+			<input id="beginTime" type="text" class="input-medium search-query" placeholder="开始 hh:mm:ss">
+			<input id="endTime" type="text" class="input-medium search-query" placeholder="结束 hh:mm:ss">
+			<button class="btn btn-info" onclick="searchData()"><i class="icon-search"></i>查询</button>
+			<span class="label label-inverse"><input id="tail" type="checkbox" value="1" style="margin-bottom: 5px;" onclick="openSocket()"> tail</span>
+
+		</div>
+		<br>
+		<div  id="data-process" class="progress progress-striped" style="height: 6px;">
+		  <div id="data-process-loading" class="bar" style="width: 0%;"></div>
+		</div>
+		<div id="data-main" style="background-color: #000000;margin-bottom: 3px;font-size: medium;color: #FFFFFF;">
+			</div>
+		</div>
+	</body>
+</html>
