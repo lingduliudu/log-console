@@ -33,6 +33,7 @@
 			
 		});
 		function searchData(){
+			$("#data-tail-tool").hide();
 			layer.msg('开发中');
 			return;
 			$("#data-process").show();
@@ -92,6 +93,7 @@
 			if(typeof(WebSocket) == "undefined") {
 				console.log("您的浏览器不支持WebSocket");
 			}else{
+				$("#data-tail-tool").show();
 				console.log("您的浏览器支持WebSocket");
 			   // var socketUrl="ws://192.168.56.1:9000/direct-rent-service/ws";
 				var socketUrl="ws://"+window.location.host.split(":")[0]+":12021/ws";
@@ -127,6 +129,17 @@
 				}
 			}
 		}
+		function toTop(){
+			$(document).scrollTop(0); 
+		}
+		function stopTailScroll(){
+			$("#tail").prop("checked", false);
+			if(typeof(WebSocket) == "undefined") {
+				console.log("您的浏览器不支持WebSocket");
+			}else{
+				socket.close();
+			}
+		}
 	</script>
 	<body>
 		<div id="data-search" style="padding: 5px;margin: 5px;">
@@ -145,6 +158,9 @@
 		</div>
 		<div id="data-main" style="background-color: #000000;margin-bottom: 3px;font-size: medium;color: #FFFFFF;">
 			</div>
+		<div id="data-tail-tool" style="padding: 5px;margin: 5px;text-align: right;display: none;">
+			<button class="btn btn-large btn-primary" type="button" onclick="stopTailScroll()">停止滚动</button>
+			<button class="btn btn-large" type="button" onclick="toTop()">回到顶部</button>
 		</div>
 	</body>
 </html>
