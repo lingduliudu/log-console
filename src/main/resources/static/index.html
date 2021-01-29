@@ -33,13 +33,19 @@
 			
 		});
 		function searchData(){
-			$("#data-tail-tool").hide();
-			layer.msg('开发中');
-			return;
+			$("#tail").prop("checked", false);
+			if(typeof(WebSocket) == "undefined") {
+				console.log("您的浏览器不支持WebSocket");
+			}else{
+				if(socket !="undefined" && socket !=null){
+					socket.close();
+				}
+			}
+			$("#data-tail-tool").show();
 			$("#data-process").show();
 			$("#data-main").html("");
 			getData();
-			intervalP = setInterval(processData,1000);
+			//intervalP = setInterval(processData,1000);
 		}
 		function getData(){
 			var selectCode = $("#data-code option:selected").val();
@@ -47,12 +53,15 @@
 			var date = $("#date").val();
 			var beginTime = $("#beginTime").val();
 			var endTime = $("#endTime").val();
+			var grepContent = $("#data-keyword").val();
 			var isTail = $("#tail:checked").val();
 			if(isTail != "1"){
 				isTail=0;
 			}
+			var index = layer.load(0, {shade: false}); //0代表加载的风格，支持0-2
 			$.ajax({async:false});
-			$.post("getdata",{"env":selectEnv,"microserviceCode":selectCode,"date":date,"beginTime":beginTime,"endTime":endTime,"isTail":isTail},function(data){
+			$.post("getdata",{"grepContent":grepContent,"env":selectEnv,"microserviceCode":selectCode,"date":date,"beginTime":beginTime,"endTime":endTime,"isTail":isTail},function(data){
+				layer.close(index);
 				if(data.code =="00-0000"){
 					
 					for(var i=0;i<data.data.length;i++ ){
@@ -148,9 +157,13 @@
 			<input id="date" type="text" class="input-medium search-query" placeholder="日期 格式yyyy-mm-dd">
 			<input id="beginTime" type="text" class="input-medium search-query" placeholder="开始 hh:mm:ss">
 			<input id="endTime" type="text" class="input-medium search-query" placeholder="结束 hh:mm:ss">
-			<button class="btn btn-info" onclick="searchData()"><i class="icon-search"></i>查询</button>
-			<span class="label label-inverse"><input id="tail" type="checkbox" value="1" style="margin-bottom: 5px;" onclick="openSocket()"> tail</span>
-
+			<br>
+			<div class="input-prepend">
+			  <span class="add-on">关键字</span>
+			  <input class="span2" style="width:770px;" id="data-keyword" type="text" placeholder="关键字">
+			</div>
+			<button class="btn btn-info" onclick="searchData()" style="margin-bottom: 10px;"><i class="icon-search"></i>查询</button>
+			<span class="btn btn-inverse" style="margin-bottom: 10px;"><input id="tail" type="checkbox" value="1"  style="margin-bottom: 4px;" onclick="openSocket()" > tail</span>
 		</div>
 		<br>
 		<div  id="data-process" class="progress progress-striped" style="height: 6px;">
@@ -159,7 +172,7 @@
 		<div id="data-main" style="background-color: #000000;margin-bottom: 3px;font-size: medium;color: #FFFFFF;">
 			</div>
 		<div id="data-tail-tool" style="padding: 5px;margin: 5px;text-align: right;display: none;">
-			<button class="btn btn-large btn-primary" type="button" onclick="stopTailScroll()">停止滚动</button>
+			<button   class="btn btn-large btn-primary" type="button" onclick="stopTailScroll()">停止滚动</button>
 			<button class="btn btn-large" type="button" onclick="toTop()">回到顶部</button>
 		</div>
 	</body>

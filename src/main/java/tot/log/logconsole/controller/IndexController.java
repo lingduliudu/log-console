@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,7 @@ import tot.log.logconsole.imapper.IMicroserviceConfigMapper;
 import tot.log.logconsole.query.SearchRequest;
 import tot.log.logconsole.ssh.SshCommand;
 import tot.log.logconsole.tool.DeduplicationTool;
+import tot.log.logconsole.tool.HelpTool;
 
 @RestController
 public class IndexController {
@@ -38,6 +40,13 @@ public class IndexController {
 			// 处理
 			return Result.success();
 		}
+		// 仅仅是grep的过滤查询进行数据
+		if(StringUtils.isEmpty(search.getDate())) {
+			search.setDate(DateUtil.today());
+		}
+		if(isOnlyGrep(search)) {
+			return getOnlyGrepData(search); 
+		}
 		MicroserviceConfig entity = new MicroserviceConfig();
 		entity.setMicroserviceCode(search.getMicroserviceCode());
 		entity.setEnv(search.getEnv());
@@ -48,40 +57,63 @@ public class IndexController {
 		// 准备连接中
 		new SshCommand().readyConnect(list);
 		for(MicroserviceConfig mc:list) {
-			// 查找当天的
-			mc.setFileName(mc.getLogFilePattern().replaceAll(Pattern.quote("${yyyy-mm-dd}"), search.getDate()));
-			String beginTime = search.getBeginTime();
-			String endTime = search.getEndTime();
-			//	
-			Date date = DateUtil.parse(endTime);
-			DateTime newEndTime = DateUtil.offsetMinute(date, 1);
-			endTime =DateUtil.format(newEndTime, "HH:mm:ss");
-			// 获取第一行的数据
-			List<String> beginResult = SshCommand.execCommand(mc, "grep -n "+"'"+beginTime+"'"+" "+mc.getLogPath()+"/"+mc.getFileName() +" |head -n 500 ");
-			List<String> endResult = SshCommand.execCommand(mc, "grep -n "+"'"+endTime+"'"+" "+mc.getLogPath()+"/"+mc.getFileName() +" |head -n 1 ");
-			List<String> totalLine = SshCommand.execCommand(mc, "cat "+mc.getLogPath()+"/"+mc.getFileName() +" |wc -l");
-			long total = Long.parseLong(totalLine.get(0).split(Pattern.quote(":"))[0]);
-			if(beginResult.isEmpty()) {
-				// 未找到数据
-				continue;
-			}
-			// 最后都没有则全部都是范围内
-			if(!endResult.isEmpty()) {
-				total = Long.parseLong(totalLine.get(0).split(Pattern.quote(":"))[0]); 
-			}
+
+			long beginLine = HelpTool.getBeginLine(mc, search);
+			long endLine = HelpTool.getEndLine(mc, search);
 			// 
-			Long beginLine = Long.parseLong(beginResult.get(0).split(Pattern.quote(":"))[0]);
-			List<String> result = new ArrayList<String>();
+			// 文件的总行数
 			
-			allResult.addAll(result);
+			List<String> totalLines = SshCommand.execCommand(mc, "cat "+HelpTool.getFullFilePath(mc, search)+" |wc -l ");
+			long totalLine = Long.parseLong(totalLines.get(0));
+			if(beginLine>0) {
+				if(endLine>0) {
+					List<String> result = SshCommand.execCommand(mc, "sed -n '"+beginLine+","+endLine+"p' "+HelpTool.getFullFilePath(mc, search));
+					allResult.addAll(result);
+				}
+				if(endLine<0) {
+					List<String> result = SshCommand.execCommand(mc,"sed -n '"+beginLine+","+totalLine+"p' "+HelpTool.getFullFilePath(mc, search));
+					allResult.addAll(result);
+				}
+			}
 		}
 		Result r = Result.success();
+		if(StringUtils.isEmpty(search.getGrepContent())) {
+			allResult = HelpTool.sortAscList(allResult);
+		}else {
+			allResult = HelpTool.sortAscList(allResult,search.getGrepContent());
+		}
 		r.setTotal(allResult.size());
-		r.setData(allResult);
+		r.setData(HelpTool.sortAscList(allResult));
 		return r;
 	}
 	
-	
+	public boolean isOnlyGrep(SearchRequest search) {
+		if(!StringUtils.isEmpty(search.getGrepContent()) ) {
+			if(StringUtils.isEmpty(search.getBeginTime()) || StringUtils.isEmpty(search.getEndTime())) {
+				return true;
+			}
+		}
+		return false;
+		
+	}
+	public Result getOnlyGrepData(SearchRequest search) {
+		MicroserviceConfig entity = new MicroserviceConfig();
+		entity.setMicroserviceCode(search.getMicroserviceCode());
+		entity.setEnv(search.getEnv());
+		entity.setState(1);
+		Example<MicroserviceConfig> searchEntity = Example.of(entity);
+		List<MicroserviceConfig> list = mapper.findAll(searchEntity);
+		// 开始查找各个文件的符合要求的数据
+		// 准备连接中
+		new SshCommand().readyConnect(list);
+		List<String> allResult = new ArrayList<String>();
+		for(MicroserviceConfig mc:list) {
+			List<String> result = SshCommand.execCommand(mc, "grep  "+"'"+search.getGrepContent()+"' "+HelpTool.getFullFilePath(mc, search));
+			allResult.addAll(result);
+		}
+		return Result.successData(HelpTool.sortAscList(allResult));
+		
+	}
 	
 	@PostMapping("getmicroservicecode")
 	public Result getMicroservicecode(){

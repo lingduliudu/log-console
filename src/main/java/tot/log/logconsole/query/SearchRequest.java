@@ -16,5 +16,6 @@ public class SearchRequest {
 	private String endTime;
 	private Integer isTail;
 	private String fullFilePath;
+	private String grepContent;
 	
 }
