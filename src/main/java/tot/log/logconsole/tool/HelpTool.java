@@ -219,11 +219,11 @@ public class HelpTool {
 			return Long.parseLong(result.get(0).split(Pattern.quote(":"))[0]);
 		}
 		// 没找到
-		Map<String,List<String>> checkPointer = checkPointer(s.getBeginTime());
+		Map<String,List<String>> checkPointer = checkPointer(s.getEndTime());
 		List<String> hours =checkPointer.get("hours");
 		List<String> minutes = checkPointer.get("minutes");
 		List<String> seconds = checkPointer.get("seconds");
-		String[] times = s.getBeginTime().split(Pattern.quote(":"));
+		String[] times = s.getEndTime().split(Pattern.quote(":"));
 		// 三层循环取
 		for(String hour:hours) {
 			String findTime = s.getDate()+" "+hour+":";
