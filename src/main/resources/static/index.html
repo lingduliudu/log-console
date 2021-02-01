@@ -12,7 +12,31 @@
 	<script type="text/javascript">
 		$("#data-process").hide();
 		var process_index = 10;
-		var intervalP ;
+		var matchColor={};
+		var supportColor= false;
+		function openColor(){
+			supportColor = !supportColor;
+			$("#data-color-tool").prop("checked", supportColor);
+			if(supportColor){
+				$("span[id=data-color-data]").show();
+				$("span[matchcolor]").each(function(){
+					$(this).css("color",matchColor[$(this).attr("matchcolor")]);
+				});
+			}else{
+				$("span[id=data-color-data]").hide();
+				$("#data-main span").css("color","#FFFFFF");
+			}
+		}
+		var getRandomColor = function(){   
+			var co = "#000000";
+		    while(co =="#000000"){
+		    	co = '#' + (function(color){    
+			         return (color +=  '0123456789abcdef'[Math.floor(Math.random()*16)])    
+			         && (color.length == 6) ?  color : arguments.callee(color);    
+			    })('');    
+		    }
+			return co;
+		 }
 		$(function(){
 			$.post("getmicroservicecode",{},function(data){
 				if(data.code =="00-0000"){
@@ -33,6 +57,7 @@
 			
 		});
 		function searchData(){
+			matchColor={};
 			$("#tail").prop("checked", false);
 			if(typeof(WebSocket) == "undefined") {
 				console.log("您的浏览器不支持WebSocket");
@@ -44,6 +69,7 @@
 			$("#data-tail-tool").show();
 			$("#data-process").show();
 			$("#data-main").html("");
+			$("span[id=data-color-data]").remove();
 			$("#data-tail-connect").remove();
 			$("#data-main").append("<span id='data-tail-connect'>连接中...</span><br/>")
 			getData();
@@ -65,7 +91,20 @@
 				if(data.code =="00-0000"){
 					
 					for(var i=0;i<data.data.length;i++ ){
-						$("#data-main").append("<span>"+data.data[i]+"</span><br/>")
+						var msg = data.data[i];
+						var realValue =  msg.split("$$$");
+						var randomColor = getRandomColor();
+						if(matchColor[realValue[1]] == undefined){
+							matchColor[realValue[1]] = randomColor;
+							$("#data-search").append("<span id='data-color-data' style='background-color:"+randomColor+";margin:3px;'>"+realValue[1]+"</span>");
+						}else{
+							randomColor = matchColor[realValue[1]];
+						}
+						if(!supportColor){
+							randomColor = "#FFFFFF";
+							$("span[id=data-color-data]").hide();
+						}
+						$("#data-main").append("<span style='color:"+randomColor+"' matchcolor='"+realValue[1]+"'>"+realValue[0]+"</span><br/>")
 					}
 					var h = $(document).height()-$(window).height();
 		            $(document).scrollTop(h);
@@ -92,12 +131,14 @@
 				return;
 			}
 			$("#data-main").html("");
+			matchColor={};
 			if(typeof(WebSocket) == "undefined") {
 				console.log("您的浏览器不支持WebSocket");
 			}else{
 				$("#data-tail-tool").show();
 				console.log("您的浏览器支持WebSocket");
 			   // var socketUrl="ws://192.168.56.1:9000/direct-rent-service/ws";
+			   $("span[id=data-color-data]").remove();
 				var socketUrl="ws://"+window.location.host.split(":")[0]+":12021/ws";
 				if(socket!=null){
 					socket.close();
@@ -119,7 +160,23 @@
 					var serverMsg = "收到服务端信息：" + msg.data;
 					$("#data-tail-connect").remove();
 					//发现消息进入    开始处理前端触发逻辑
-					$("#data-main").append("<span>"+msg.data+"</span><br/>")
+					var rmsg = msg.data;
+					var realValue =  rmsg.split("$$$");
+					var randomColor = getRandomColor();
+					if(matchColor[realValue[1]] == undefined){
+						matchColor[realValue[1]] = randomColor;
+						$("#data-search").append("<span id='data-color-data' style='background-color:"+randomColor+";margin:3px;'>"+realValue[1]+"</span>");
+					}else{
+						randomColor = matchColor[realValue[1]];
+					}
+					if(!supportColor){
+						randomColor = "#FFFFFF";
+						$("span[id=data-color-data]").hide();
+					}
+					$("#data-main").append("<span style='color:"+randomColor+"' matchcolor='"+realValue[1]+"'>"+realValue[0]+"</span><br/>")
+					
+					
+					
 					var h = $(document).height()-$(window).height();
 		            $(document).scrollTop(h); 
 				};
@@ -159,6 +216,7 @@
 			</div>
 			<button class="btn btn-info" onclick="searchData()" style="margin-bottom: 10px;"><i class="icon-search"></i>查询</button>
 			<span class="btn btn-inverse" style="margin-bottom: 10px;"><input id="tail" type="checkbox" value="1"  style="margin-bottom: 4px;" onclick="openSocket()" > tail</span>
+			<span class="btn btn-warning" style="margin-bottom: 10px;"><input id="data-color-tool" type="checkbox" value="1"  style="margin-bottom: 4px;" onclick="openColor()" >颜色标识</span>
 		</div>
 		<br>
 		<div  id="data-process" class="progress progress-striped" style="height: 6px;">

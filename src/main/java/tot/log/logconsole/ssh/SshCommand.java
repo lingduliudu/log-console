@@ -70,7 +70,7 @@ public class SshCommand {
 					 break;
 				 }
 				// log.info(msg);
-				 TextWebSocketFrame twsf = new TextWebSocketFrame(msg);
+				 TextWebSocketFrame twsf = new TextWebSocketFrame(msg+"$$$"+config.getSshIp());
 				 channel.writeAndFlush(twsf);
 			}
 			in.close();

@@ -23,6 +23,7 @@ import tot.log.logconsole.query.SearchRequest;
 import tot.log.logconsole.ssh.SshCommand;
 import tot.log.logconsole.tool.DeduplicationTool;
 import tot.log.logconsole.tool.HelpTool;
+import tot.log.logconsole.tool.ListTool;
 import tot.log.logconsole.tool.RequestValidTool;
 
 @RestController
@@ -64,11 +65,11 @@ public class IndexController {
 			if(beginLine>0) {
 				if(endLine>0) {
 					List<String> result = SshCommand.execCommand(mc, "sed -n '"+beginLine+","+endLine+"p' "+HelpTool.getFullFilePath(mc, search));
-					allResult.addAll(result);
+					allResult.addAll(ListTool.allTail(result, "$$$"+mc.getSshIp()));
 				}
 				if(endLine<0) {
 					List<String> result = SshCommand.execCommand(mc,"sed -n '"+beginLine+","+totalLine+"p' "+HelpTool.getFullFilePath(mc, search));
-					allResult.addAll(result);
+					allResult.addAll(ListTool.allTail(result, "$$$"+mc.getSshIp()));
 				}
 			}
 		}
@@ -106,7 +107,7 @@ public class IndexController {
 		// 仅仅是grep的过滤查询进行数据
 		for(MicroserviceConfig mc:list) {
 			List<String> result = SshCommand.execCommand(mc, "grep  "+"'"+search.getGrepContent()+"' "+HelpTool.getFullFilePath(mc, search));
-			allResult.addAll(result);
+			allResult.addAll(ListTool.allTail(result, "$$$"+mc.getSshIp()));
 		}
 		return Result.successData(HelpTool.sortAscList(allResult));
 		
