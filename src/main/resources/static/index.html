@@ -44,8 +44,9 @@
 			$("#data-tail-tool").show();
 			$("#data-process").show();
 			$("#data-main").html("");
+			$("#data-tail-connect").remove();
+			$("#data-main").append("<span id='data-tail-connect'>连接中...</span><br/>")
 			getData();
-			//intervalP = setInterval(processData,1000);
 		}
 		function getData(){
 			var selectCode = $("#data-code option:selected").val();
@@ -58,29 +59,21 @@
 			if(isTail != "1"){
 				isTail=0;
 			}
-			var index = layer.load(0, {shade: false}); //0代表加载的风格，支持0-2
 			$.ajax({async:false});
 			$.post("getdata",{"grepContent":grepContent,"env":selectEnv,"microserviceCode":selectCode,"date":date,"beginTime":beginTime,"endTime":endTime,"isTail":isTail},function(data){
-				layer.close(index);
+				$("#data-tail-connect").remove();
 				if(data.code =="00-0000"){
 					
 					for(var i=0;i<data.data.length;i++ ){
 						$("#data-main").append("<span>"+data.data[i]+"</span><br/>")
 					}
 					var h = $(document).height()-$(window).height();
-		            $(document).scrollTop(h); 
+		            $(document).scrollTop(h);
+		            return;
 				}
+				layer.msg(data.msg);
+				$("#data-main").html("");
 			},"json");
-		}
-		
-		function processData(){
-			process_index = process_index+10;
-			$("#data-process-loading").css("width",process_index+"%");
-			if(process_index==100){
-				clearInterval(intervalP);
-				$("#data-process").hide();
-				$("#data-process-loading").css("width","0%");
-			}
 		}
 		
 		// socket
@@ -114,6 +107,7 @@
 				//打开事件
 				socket.onopen = function() {
 					console.log("websocket已打开");
+					$("#data-main").append("<span id='data-tail-connect'>连接中...</span><br/>")
 					var selectCode = $("#data-code option:selected").val();
 					var selectEnv = $("#data-env option:selected").val();
 					var date = $("#date").val();
@@ -123,6 +117,7 @@
 				//获得消息事件
 				socket.onmessage = function(msg) {
 					var serverMsg = "收到服务端信息：" + msg.data;
+					$("#data-tail-connect").remove();
 					//发现消息进入    开始处理前端触发逻辑
 					$("#data-main").append("<span>"+msg.data+"</span><br/>")
 					var h = $(document).height()-$(window).height();

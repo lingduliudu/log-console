@@ -23,6 +23,7 @@ import tot.log.logconsole.query.SearchRequest;
 import tot.log.logconsole.ssh.SshCommand;
 import tot.log.logconsole.tool.DeduplicationTool;
 import tot.log.logconsole.tool.HelpTool;
+import tot.log.logconsole.tool.RequestValidTool;
 
 @RestController
 public class IndexController {
@@ -32,17 +33,8 @@ public class IndexController {
 	@PostMapping("getdata")
 	public Result getData(SearchRequest search){
 		// 检测查询是否合法
-		if(search.getMicroserviceCode()==null || "".equals(search.getMicroserviceCode())) {
-			return Result.error();
-		}
-		if(search.getIsTail()==1) {
-			// 特殊处理
-			// 处理
-			return Result.success();
-		}
-		// 仅仅是grep的过滤查询进行数据
-		if(StringUtils.isEmpty(search.getDate())) {
-			search.setDate(DateUtil.today());
+		if(RequestValidTool.stop(search)) {
+			return Result.error("搜索条件不规范");
 		}
 		if(isOnlyGrep(search)) {
 			return getOnlyGrepData(search); 
@@ -107,6 +99,7 @@ public class IndexController {
 		// 准备连接中
 		new SshCommand().readyConnect(list);
 		List<String> allResult = new ArrayList<String>();
+		// 仅仅是grep的过滤查询进行数据
 		for(MicroserviceConfig mc:list) {
 			List<String> result = SshCommand.execCommand(mc, "grep  "+"'"+search.getGrepContent()+"' "+HelpTool.getFullFilePath(mc, search));
 			allResult.addAll(result);

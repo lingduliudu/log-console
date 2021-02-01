@@ -11,6 +11,7 @@ public class Result<T> {
 	private static final String SUCCESS_CODE="00-0000";
 	
 	private static final String ERROR_MSG="内部错误";
+	private static final String ERROR_RULE="搜索条件不规范";
 	private static final String ERROR_CODE="99-9999";
 	
 	private String msg;
@@ -28,6 +29,9 @@ public class Result<T> {
 	}
 	public static Result<String> error() {
 		return new Result<String>(ERROR_CODE,ERROR_MSG,null);
+	}
+	public static Result<String> error(String msg) {
+		return new Result<String>(ERROR_CODE,msg,null);
 	}
 	public static Result successData(Object t) {
 		return new Result(SUCCESS_CODE,SUCCESS_MSG,t);

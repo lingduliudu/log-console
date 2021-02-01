@@ -26,6 +26,7 @@ public class SshCommand {
 	public static List<String> execCommand(MicroserviceConfig config,String cmd) {
 		List<String> result = new ArrayList<String>();
 		try {
+			log.info("cmd :"+cmd);
 			Session session = new SshCommand().getSession(config);
 			ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
 			channelExec.setCommand(cmd);         //添加传入进来的shell命令
@@ -52,7 +53,7 @@ public class SshCommand {
 			// 获取今天的
 			String fullFilePath = config.getLogPath()+"/"+config.getLogFilePattern().replaceAll(Pattern.quote("${yyyy-mm-dd}"), date);
 			String cmd = "tail -f "+fullFilePath;
-			//log.info("tail命令:"+cmd);
+			log.info("tail命令:"+cmd);
 			Session session = new SshCommand().getSession(config);
 			ChannelExec channelExec = (ChannelExec) session.openChannel("exec");
 			channelExec.setCommand(cmd);         //添加传入进来的shell命令
@@ -87,7 +88,7 @@ public class SshCommand {
 		Properties prop = new Properties();
 		prop.put("StrictHostKeyChecking", "no");//在代码里需要跳过检测。否则会报错找不到主机
 		session.setConfig(prop); // 为Session对象设置properties
-		int timeout = 300000;
+		int timeout = 3000000;
 		session.setTimeout(timeout); // 设置timeout时间
 		session.connect(); // 通过Session建立与远程服务器的连接回话
 		GlobalTool.sshs.put(config.getSshIp()+config.getMicroserviceCode(), session);

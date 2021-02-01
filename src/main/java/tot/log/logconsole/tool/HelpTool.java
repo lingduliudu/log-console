@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSON;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import tot.log.logconsole.entity.MicroserviceConfig;
 import tot.log.logconsole.query.SearchRequest;
@@ -43,9 +44,17 @@ public class HelpTool {
 			return reult;
 		}
 		SortedMap<String,String> sortedMap = new TreeMap<String,String>();
+		// 在上一个时间的基础上加一好秒
+		String preTime = "";
 		for(String str:allResult) {
-			String key = str.substring(0,23);
-			sortedMap.put(key, str);
+			if(str!=null&& str.startsWith("2")) {
+				preTime =  str.substring(0,23);
+				String key = str.substring(0,23);
+				sortedMap.put(key, str);
+			}else {
+				String key = HelpTool.add1Ms(preTime);
+				sortedMap.put(key, str);
+			}
 		}
 		for(Entry<String, String> temp :sortedMap.entrySet()){
 			reult.add(temp.getValue());  
@@ -90,7 +99,7 @@ public class HelpTool {
 			String findTime = s.getDate()+" "+hour+":";
 			List<String> hourResult = SshCommand.execCommand(mc, "grep -n "+"'"+findTime+"'"+" "+getFullFilePath(mc,s) +" |head -n 1 ");
 			// 找到了开始的行
-			if(ListTool.isNotEmpty(result)) {
+			if(ListTool.isNotEmpty(hourResult)) {
 				// 开始判断分
 				for(String minute:minutes) {
 					findTime = s.getDate()+" "+hour+":"+minute+":";
@@ -200,7 +209,7 @@ public class HelpTool {
 			String findTime = s.getDate()+" "+hour+":";
 			List<String> hourResult = SshCommand.execCommand(mc, "grep -n "+"'"+findTime+"'"+" "+getFullFilePath(mc,s) +" |tail -n 1 ");
 			// 找到了开始的行
-			if(ListTool.isNotEmpty(result)) {
+			if(ListTool.isNotEmpty(hourResult)) {
 				// 开始判断分
 				for(String minute:minutes) {
 					findTime = s.getDate()+" "+hour+":"+minute+":";
@@ -221,7 +230,12 @@ public class HelpTool {
 		}
 		return -1;
 	}
+	
+	public static String add1Ms(String time) {
+		DateTime newTime =DateUtil.parse(time, "yyyy-MM-dd HH:mm:ss,SSS");
+		return DateUtil.format(DateUtil.offsetMillisecond(newTime, 1),"yyyy-MM-dd HH:mm:ss,SSS");
+	}
 	public static void main(String[] args) {
-		System.out.println(JSON.toJSON(checkPointer("23:30:22")));
+		System.out.println(add1Ms("2021-02-01 09:59:18,565"));
 	}
 }
