@@ -68,9 +68,16 @@ public class HelpTool {
 			return reult;
 		}
 		SortedMap<String,String> sortedMap = new TreeMap<String,String>();
+		String preTime = "";
 		for(String str:allResult) {
-			String key = str.substring(0,23);
-			sortedMap.put(key, str);
+			if(str!=null&& str.startsWith("2")) {
+				preTime =  str.substring(0,23);
+				String key = str.substring(0,23);
+				sortedMap.put(key, str);
+			}else {
+				String key = HelpTool.add1Ms(preTime);
+				sortedMap.put(key, str);
+			}
 		}
 		for(Entry<String, String> temp :sortedMap.entrySet()){
 			if(temp.getValue().contains(grep)) {
@@ -91,9 +98,10 @@ public class HelpTool {
 		}
 		// 没找到
 		Map<String,List<String>> checkPointer = checkPointer(s.getBeginTime());
-		List<String> hours =checkPointer.get("hours");
-		List<String> minutes = checkPointer.get("minutes");
-		List<String> seconds = checkPointer.get("seconds");
+		List<String> hours =checkPointer.get("prehours");
+		List<String> minutes = checkPointer.get("preminutes");
+		List<String> seconds = checkPointer.get("preseconds");
+		String[] times = s.getBeginTime().split(Pattern.quote(":"));
 		// 三层循环取
 		for(String hour:hours) {
 			String findTime = s.getDate()+" "+hour+":";
@@ -102,10 +110,21 @@ public class HelpTool {
 			if(ListTool.isNotEmpty(hourResult)) {
 				// 开始判断分
 				for(String minute:minutes) {
+					// 开始判断
+					if(hour.equals(times[0])) {
+						if(minute.compareTo(times[1])<0) {
+							continue;
+						}
+					}
 					findTime = s.getDate()+" "+hour+":"+minute+":";
 					List<String> minuteResult = SshCommand.execCommand(mc, "grep -n "+"'"+findTime+"'"+" "+getFullFilePath(mc,s) +" |head -n 1 ");
 					if(ListTool.isNotEmpty(minuteResult)) {
 						for(String second:seconds) {
+							if(hour.equals(times[0]) && minute.equals(times[1])) {
+								if(second.compareTo(times[2])<0) {
+									continue;
+								}
+							}
 							findTime = s.getDate()+" "+hour+":"+minute+":"+second;
 							List<String> secondResult = SshCommand.execCommand(mc, "grep -n "+"'"+findTime+"'"+" "+getFullFilePath(mc,s) +" |head -n 1 ");
 							if(ListTool.isNotEmpty(secondResult)) {
@@ -134,14 +153,14 @@ public class HelpTool {
 		int maxMinute = 59;
 		int maxSecond = 59;
 		// 开始判断  前置
-		for(int i = maxHour;i<=Integer.parseInt(times[0].equals("00")?"0":times[0]);i--) {
+		for(int i = Integer.parseInt(times[0].equals("00")?"0":times[0]);i<=maxHour;i++) {
 			if(i<10) {
 				prehours.add("0"+i);
 				continue;
 			}
 			prehours.add(""+i);
 		}
-		for(int i = maxMinute;i<=1;i--) {
+		for(int i = 0;i<=maxMinute;i++) {
 			if(i<10) {
 				preminutes.add("0"+i);
 				continue;
@@ -149,7 +168,7 @@ public class HelpTool {
 			preminutes.add(""+i);
 		}
 		// 开始判断
-		for(int i = maxSecond;i<=1;i--) {
+		for(int i = 0;i<=maxSecond;i++) {
 			if(i<10) {
 				preseconds.add("0"+i);
 				continue;
@@ -158,7 +177,7 @@ public class HelpTool {
 		}
 		// 开始判断
 		
-		for(int i = Integer.parseInt(times[0].equals("00")?"0":times[0]);i<=maxHour;i++) {
+		for(int i = Integer.parseInt(times[0].equals("00")?"0":times[0]);i>=0;i--) {
 			if(i<10) {
 				hours.add("0"+i);
 				continue;
@@ -166,7 +185,7 @@ public class HelpTool {
 			hours.add(""+i);
 		}
 
-		for(int i = 1;i<=maxMinute;i++) {
+		for(int i = maxMinute;i>=0;i--) {
 			if(i<10) {
 				minutes.add("0"+i);
 				continue;
@@ -174,7 +193,7 @@ public class HelpTool {
 			minutes.add(""+i);
 		}
 		// 开始判断
-		for(int i = 1;i<=maxSecond;i++) {
+		for(int i = maxSecond;i>=0;i--) {
 			if(i<10) {
 				seconds.add("0"+i);
 				continue;
@@ -201,9 +220,10 @@ public class HelpTool {
 		}
 		// 没找到
 		Map<String,List<String>> checkPointer = checkPointer(s.getBeginTime());
-		List<String> hours =checkPointer.get("prehours");
-		List<String> minutes = checkPointer.get("preminutes");
-		List<String> seconds = checkPointer.get("preseconds");
+		List<String> hours =checkPointer.get("hours");
+		List<String> minutes = checkPointer.get("minutes");
+		List<String> seconds = checkPointer.get("seconds");
+		String[] times = s.getBeginTime().split(Pattern.quote(":"));
 		// 三层循环取
 		for(String hour:hours) {
 			String findTime = s.getDate()+" "+hour+":";
@@ -212,10 +232,20 @@ public class HelpTool {
 			if(ListTool.isNotEmpty(hourResult)) {
 				// 开始判断分
 				for(String minute:minutes) {
+					if(hour.equals(times[0])) {
+						if(minute.compareTo(times[1])>0) {
+							continue;
+						}
+					}
 					findTime = s.getDate()+" "+hour+":"+minute+":";
 					List<String> minuteResult = SshCommand.execCommand(mc, "grep -n "+"'"+findTime+"'"+" "+getFullFilePath(mc,s) +" |tail -n 1 ");
 					if(ListTool.isNotEmpty(minuteResult)) {
 						for(String second:seconds) {
+							if(hour.equals(times[0]) && minute.equals(times[1])) {
+								if(second.compareTo(times[2])>0) {
+									continue;
+								}
+							}
 							findTime = s.getDate()+" "+hour+":"+minute+":"+second;
 							List<String> secondResult = SshCommand.execCommand(mc, "grep -n "+"'"+findTime+"'"+" "+getFullFilePath(mc,s) +" |tail -n 1 ");
 							if(ListTool.isNotEmpty(secondResult)) {

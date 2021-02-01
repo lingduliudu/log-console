@@ -57,6 +57,10 @@ public class IndexController {
 			
 			List<String> totalLines = SshCommand.execCommand(mc, "cat "+HelpTool.getFullFilePath(mc, search)+" |wc -l ");
 			long totalLine = Long.parseLong(totalLines.get(0));
+			// 完美错过
+			if(endLine<beginLine) {
+				continue;
+			}
 			if(beginLine>0) {
 				if(endLine>0) {
 					List<String> result = SshCommand.execCommand(mc, "sed -n '"+beginLine+","+endLine+"p' "+HelpTool.getFullFilePath(mc, search));
