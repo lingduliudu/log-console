@@ -70,6 +70,7 @@
 			$("#data-process").show();
 			$("#data-main").html("");
 			$("span[id=data-color-data]").remove();
+			$("span[id=data-color-ip]").remove();
 			$("#data-tail-connect").remove();
 			$("#data-main").append("<span id='data-tail-connect'>连接中...</span><br/>")
 			getData();
@@ -96,7 +97,7 @@
 						var randomColor = getRandomColor();
 						if(matchColor[realValue[1]] == undefined){
 							matchColor[realValue[1]] = randomColor;
-							$("#data-search").append("<span id='data-color-data' style='background-color:"+randomColor+";margin:3px;'>"+realValue[1]+"</span>");
+							$("#data-search").append("<span id='data-color-ip'  style='border:1px solid #000;margin:2px;padding-right:2px;'>"+realValue[1]+"</span><span id='data-color-data' style='background-color:"+randomColor+";margin:3px;'>&nbsp;&nbsp;</span>");
 						}else{
 							randomColor = matchColor[realValue[1]];
 						}
@@ -139,6 +140,7 @@
 				console.log("您的浏览器支持WebSocket");
 			   // var socketUrl="ws://192.168.56.1:9000/direct-rent-service/ws";
 			   $("span[id=data-color-data]").remove();
+			   $("span[id=data-color-ip]").remove();
 				var socketUrl="ws://"+window.location.host.split(":")[0]+":12021/ws";
 				if(socket!=null){
 					socket.close();
@@ -165,7 +167,7 @@
 					var randomColor = getRandomColor();
 					if(matchColor[realValue[1]] == undefined){
 						matchColor[realValue[1]] = randomColor;
-						$("#data-search").append("<span id='data-color-data' style='background-color:"+randomColor+";margin:3px;'>"+realValue[1]+"</span>");
+						$("#data-search").append("<span id='data-color-ip' style='border:1px solid #000;margin:2px;padding-right:2px;'>"+realValue[1]+"</span><span id='data-color-data' style='background-color:"+randomColor+";margin:3px;'>&nbsp;&nbsp;</span>");
 					}else{
 						randomColor = matchColor[realValue[1]];
 					}
