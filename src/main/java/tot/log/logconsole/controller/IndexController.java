@@ -106,7 +106,7 @@ public class IndexController {
 		List<String> allResult = new ArrayList<String>();
 		// 仅仅是grep的过滤查询进行数据
 		for(MicroserviceConfig mc:list) {
-			List<String> result = SshCommand.execCommand(mc, "grep  "+"'"+search.getGrepContent()+"' "+HelpTool.getFullFilePath(mc, search));
+			List<String> result = SshCommand.execCommand(mc, "grep  "+search.getGrepContent()+"  "+HelpTool.getFullFilePath(mc, search));
 			allResult.addAll(ListTool.allTail(result, "$$$"+mc.getSshIp()));
 		}
 		return Result.successData(HelpTool.sortAscList(allResult));
