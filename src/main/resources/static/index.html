@@ -153,8 +153,9 @@
 					$("#data-main").append("<span id='data-tail-connect'>连接中...</span><br/>")
 					var selectCode = $("#data-code option:selected").val();
 					var selectEnv = $("#data-env option:selected").val();
+					var traceId = $("#trace-keyword").val();
 					var date = $("#date").val();
-					var msg = '{"env":"'+selectEnv+'","code":"'+selectCode+'","date":"'+date+'"}';
+					var msg = '{"env":"'+selectEnv+'","code":"'+selectCode+'","date":"'+date+'","traceId":"'+traceId+'"}';
 					socket.send(msg);
 				};
 				//获得消息事件
@@ -203,6 +204,9 @@
 				socket.close();
 			}
 		}
+		function showTrace(){
+			$("#traceDiv").show();
+		}
 	</script>
 	<body>
 		<div id="data-search" style="padding: 5px;margin: 5px;">
@@ -213,8 +217,12 @@
 			<input id="endTime" type="text" class="input-medium search-query" placeholder="结束 hh:mm:ss">
 			<br>
 			<div class="input-prepend">
-			  <span class="add-on">关键字</span>
+			  <span class="add-on" onclick="showTrace()">关键字</span>
 			  <input class="span2" style="width:770px;" id="data-keyword" type="text" placeholder="关键字">
+			</div>
+			<div class="input-prepend" id="traceDiv" style="display: none;">
+			  <span class="add-on" >追踪符</span>
+			  <input class="span2" style="width:770px;" id="trace-keyword" type="text" placeholder="追踪符">
 			</div>
 			<button class="btn btn-info" onclick="searchData()" style="margin-bottom: 10px;"><i class="icon-search"></i>查询</button>
 			<span class="btn btn-inverse" style="margin-bottom: 10px;"><input id="tail" type="checkbox" value="1"  style="margin-bottom: 4px;" onclick="openSocket()" > tail</span>

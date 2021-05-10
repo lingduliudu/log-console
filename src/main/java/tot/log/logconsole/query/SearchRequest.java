@@ -17,5 +17,6 @@ public class SearchRequest {
 	private Integer isTail;
 	private String fullFilePath;
 	private String grepContent;
+	private String traceId;
 	
 }

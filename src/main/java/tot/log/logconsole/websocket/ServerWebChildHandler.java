@@ -40,6 +40,7 @@ public class ServerWebChildHandler extends SimpleChannelInboundHandler<TextWebSo
 		String code = reqMsg.getString("code");
 		String date = reqMsg.getString("date");
 		String env = reqMsg.getString("env");
+		String traceId = reqMsg.getString("traceId");
 		// 获取到服务地址
 		MicroserviceConfig entity = new MicroserviceConfig();
 		entity.setMicroserviceCode(code);
@@ -53,7 +54,7 @@ public class ServerWebChildHandler extends SimpleChannelInboundHandler<TextWebSo
 			executorService.execute(new Runnable() {
 				public void run() {
 					//
-						new SshCommand().execCommandTail(mc,ctx.channel(),date);
+						new SshCommand().execCommandTail(mc,ctx.channel(),date,traceId);
 					}
 				}
 			);

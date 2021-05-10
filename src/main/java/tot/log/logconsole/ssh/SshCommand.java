@@ -45,7 +45,7 @@ public class SshCommand {
 		}
 		return result;
 	}
-	public void execCommandTail(MicroserviceConfig config,Channel channel,String date) {
+	public void execCommandTail(MicroserviceConfig config,Channel channel,String date,String traceId) {
 		try {
 			if(date==null || "".equals(date)) {
 				date  = DateUtil.today();
@@ -70,6 +70,13 @@ public class SshCommand {
 					 break;
 				 }
 				// log.info(msg);
+				 if(traceId!=null && !"".equals(traceId)) {
+					 if(msg.contains("["+traceId+"]")) {
+						 TextWebSocketFrame twsf = new TextWebSocketFrame(msg+"$$$"+config.getSshIp());
+						 channel.writeAndFlush(twsf);
+					 }
+					 continue;
+				 }
 				 TextWebSocketFrame twsf = new TextWebSocketFrame(msg+"$$$"+config.getSshIp());
 				 channel.writeAndFlush(twsf);
 			}
