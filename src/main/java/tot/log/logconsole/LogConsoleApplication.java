@@ -1,5 +1,7 @@
 package tot.log.logconsole;
 
+import java.io.File;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -26,6 +28,9 @@ public class LogConsoleApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+    	// 创建下载日志临时目录
+    	File tempFile = new File(GlobalTool.FILE_PATH);
+    	tempFile.mkdirs();
         webSocketServer.startWeb();
     }
 }

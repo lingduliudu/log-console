@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -23,6 +24,22 @@ import tot.log.logconsole.websocket.ServerWebChildHandler;
 @Slf4j
 public class SshCommand {
 
+	
+	public static List<String> downloadFile(MicroserviceConfig config,String sourceFilePath,String targetFilePath) {
+		List<String> result = new ArrayList<String>();
+		try {
+			Session session = new SshCommand().getSession(config);
+			ChannelSftp channelExec = (ChannelSftp) session.openChannel("sftp");
+			channelExec.setInputStream(null);
+			channelExec.connect();
+			channelExec.get(sourceFilePath,targetFilePath);
+			channelExec.disconnect();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
 	public static List<String> execCommand(MicroserviceConfig config,String cmd) {
 		List<String> result = new ArrayList<String>();
 		try {

@@ -14,6 +14,13 @@
 		var process_index = 10;
 		var matchColor={};
 		var supportColor= false;
+		function downloadFile(){
+			var selectCode = $("#data-code option:selected").val();
+			var selectEnv = $("#data-env option:selected").val();
+			var date = $("#date").val();
+			// 下载
+			window.open("downloadlog?env="+selectEnv+"&microserviceCode="+selectCode+"&date="+date,'_self');
+		}
 		function openColor(){
 			supportColor = !supportColor;
 			$("#data-color-tool").prop("checked", supportColor);
@@ -225,6 +232,7 @@
 			  <input class="span2" style="width:770px;" id="trace-keyword" type="text" placeholder="追踪符">
 			</div>
 			<button class="btn btn-info" onclick="searchData()" style="margin-bottom: 10px;"><i class="icon-search"></i>查询</button>
+			<button class="btn" onclick="downloadFile()" style="margin-bottom: 10px;"><i class="icon-download" ></i>下载</button>
 			<span class="btn btn-inverse" style="margin-bottom: 10px;"><input id="tail" type="checkbox" value="1"  style="margin-bottom: 4px;" onclick="openSocket()" > tail</span>
 			<span class="btn btn-warning" style="margin-bottom: 10px;"><input id="data-color-tool" type="checkbox" value="1"  style="margin-bottom: 4px;" onclick="openColor()" >颜色标识</span>
 		</div>

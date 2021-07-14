@@ -18,6 +18,7 @@ public class ConnectTask {
 	@Autowired
 	private IMicroserviceConfigMapper mapper;
 	
+	
 	@Scheduled(cron = "0 0/10 * * * ?")
 	public void autoConnect() {
 		MicroserviceConfig entity = new MicroserviceConfig();
