@@ -14,6 +14,7 @@
 		var process_index = 10;
 		var matchColor={};
 		var supportColor= false;
+		var supportTail = false;
 		function downloadFile(){
 			var selectCode = $("#data-code option:selected").val();
 			var selectEnv = $("#data-env option:selected").val();
@@ -126,6 +127,8 @@
 		// socket
 		var socket;
 		function openSocket() {
+			supportTail = !supportTail;
+			$("#tail").prop("checked", supportTail);
 			var isTail = $("#tail:checked").val();
 			if(isTail != "1"){
 				isTail=0;
@@ -205,6 +208,7 @@
 		}
 		function stopTailScroll(){
 			$("#tail").prop("checked", false);
+			supportTail = false;
 			if(typeof(WebSocket) == "undefined") {
 				console.log("您的浏览器不支持WebSocket");
 			}else{
@@ -233,8 +237,8 @@
 			</div>
 			<button class="btn btn-info" onclick="searchData()" style="margin-bottom: 10px;"><i class="icon-search"></i>查询</button>
 			<button class="btn" onclick="downloadFile()" style="margin-bottom: 10px;"><i class="icon-download" ></i>下载</button>
-			<span class="btn btn-inverse" style="margin-bottom: 10px;"><input id="tail" type="checkbox" value="1"  style="margin-bottom: 4px;" onclick="openSocket()" > tail</span>
-			<span class="btn btn-warning" style="margin-bottom: 10px;"><input id="data-color-tool" type="checkbox" value="1"  style="margin-bottom: 4px;" onclick="openColor()" >颜色标识</span>
+			<span class="btn btn-inverse" style="margin-bottom: 10px;" onclick="openSocket()"><input id="tail" type="checkbox" value="1"  style="margin-bottom: 4px;"  > tail</span>
+			<span class="btn btn-warning" style="margin-bottom: 10px;" onclick="openColor()"><input id="data-color-tool" type="checkbox" value="1"  style="margin-bottom: 4px;" >颜色标识</span>
 		</div>
 		<br>
 		<div  id="data-process" class="progress progress-striped" style="height: 6px;">
