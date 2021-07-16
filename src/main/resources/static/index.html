@@ -46,7 +46,28 @@
 			return co;
 		 }
 		$(function(){
-			$.post("getmicroservicecode",{},function(data){
+			$.post("getenv",{},function(data){
+				if(data.code =="00-0000"){
+					$("#data-env").html("");
+					for(var i=0;i<data.data.length;i++ ){
+						$("#data-env").append("<option value='"+data.data[i].env+"'>"+data.data[i].env+"</span><br/>")
+						if(i==0){
+							$.post("getmicroservicecode",{"env":data.data[0].env},function(data){
+								if(data.code =="00-0000"){
+									$("#data-code").html("");
+									for(var i=0;i<data.data.length;i++ ){
+										$("#data-code").append("<option value='"+data.data[i].microserviceCode+"'>"+data.data[i].microserviceCode+"</span><br/>")
+									}
+								}
+							},"json");
+						}
+					}
+				}
+			},"json");
+		});
+		function selectCode(){
+			var selectEnv = $("#data-env option:selected").val();
+			$.post("getmicroservicecode",{"env":selectEnv},function(data){
 				if(data.code =="00-0000"){
 					$("#data-code").html("");
 					for(var i=0;i<data.data.length;i++ ){
@@ -54,16 +75,8 @@
 					}
 				}
 			},"json");
-			$.post("getenv",{},function(data){
-				if(data.code =="00-0000"){
-					$("#data-env").html("");
-					for(var i=0;i<data.data.length;i++ ){
-						$("#data-env").append("<option value='"+data.data[i].env+"'>"+data.data[i].env+"</span><br/>")
-					}
-				}
-			},"json");
 			
-		});
+		}
 		function searchData(){
 			matchColor={};
 			$("#tail").prop("checked", false);
@@ -221,7 +234,7 @@
 	</script>
 	<body>
 		<div id="data-search" style="padding: 5px;margin: 5px;">
-			<select id="data-env" class="select-medium search-query" style="width: 60px;margin-top: 11px;"></select>
+			<select id="data-env" class="select-medium search-query" style="width: 60px;margin-top: 11px;" onchange="selectCode()"></select>
 			<select id="data-code" class="select-medium search-query" style="width: 220px;margin-top: 11px;"></select>
 			<input id="date" type="text" class="input-medium search-query" placeholder="日期 格式yyyy-mm-dd">
 			<input id="beginTime" type="text" class="input-medium search-query" placeholder="开始 hh:mm:ss">

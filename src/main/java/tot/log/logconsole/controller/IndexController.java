@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -126,10 +127,11 @@ public class IndexController {
 	}
 
 	@PostMapping("getmicroservicecode")
-	public Result getMicroservicecode() {
+	public Result getMicroservicecode(SearchRequest searchRequest) {
 		// 检测查询是否合法
 		MicroserviceConfig entity = new MicroserviceConfig();
 		entity.setState(1);
+		entity.setEnv(searchRequest.getEnv());
 		Example<MicroserviceConfig> searchEntity = Example.of(entity);
 		List<MicroserviceConfig> list = mapper.findAll(searchEntity);
 		return Result.successData(list.stream().filter(DeduplicationTool.distinctByKey(t -> t.getMicroserviceCode()))
